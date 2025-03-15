@@ -18,44 +18,53 @@ jobs:
       - name: Push Docker Image ke Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/myapp:latest
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cek SSH ke Server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "Berhasil masuk ke server!"
-            whoami
-            ls -lah ~
-            uname -a
-
-      - name: Deploy ke Server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            docker pull ${{ secrets.DOCKER_USERNAME }}/myapp:latest
-            docker stop myapp || true
-            docker rm myapp || true
-            docker run -d -p 8000:80 --name myapp ${{ secrets.DOCKER_USERNAME }}/myapp:latest
-
   test-ssh:
     runs-on: ubuntu-latest
     steps:
-      - name: Cek SSH ke Server
+      - name: Cek SSH ke Server (Debug Mode)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "Berhasil masuk ke server!"
+            echo "✅ Berhasil masuk ke server!"
+            whoami
+            echo "✅ Cek home directory:"
+            ls -lah ~
+            echo "✅ Cek OS dan kernel:"
             uname -a
+            echo "✅ Cek konektivitas internet:"
+            ping -c 4 google.com || echo "🚨 Tidak bisa akses internet!"
+            echo "✅ Cek status SSH service:"
+            systemctl status ssh || echo "🚨 SSH service bermasalah!"
+
+  deploy:
+    needs: [build, test-ssh]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy ke Server (Debug Mode)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "✅ Login ke server berhasil"
+            echo "✅ Cek status Docker service"
+            systemctl status docker || echo "🚨 Docker tidak berjalan!"
+
+            echo "✅ Login ke Docker Hub"
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+            echo "✅ Pull image terbaru"
+            docker pull ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+
+            echo "✅ Hentikan container lama"
+            docker stop myapp || echo "⚠️ Container tidak ditemukan, lanjut ke langkah berikutnya."
+
+            echo "✅ Hapus container lama"
+            docker rm myapp || echo "⚠️ Container tidak ditemukan, lanjut ke langkah berikutnya."
+
+            echo "✅ Jalankan container baru"
+            docker run -d -p 8000:80 --name myapp ${{ secrets.DOCKER_USERNAME }}/myapp:latest
