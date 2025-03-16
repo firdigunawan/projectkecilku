@@ -22,7 +22,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Test ping ini coba bisa nggak 
-        run: ping 192.168.1.100
+        run: ping -c 4 192.168.1.100
       - name: Ini Coba Cek SSH Ke Server
         uses: fifsky/ssh-action@master
         with:
