@@ -19,14 +19,14 @@ jobs:
         run: docker push ${{ secrets.DOCKER_USERNAME }}/myapp:latest
 
   test-ssh:
-    runs-on: self-hosted  # Ubah ke self-hosted karena ini server sendiri
+    runs-on: self-hosted
     steps:
-      - name: Cek SSH ke Server (Debug Mode)
+      - name: Cek SSH ke Server
         uses: fifsky/ssh-action@master
         with:
-          host: "192.168.1.100"
-          username: "ubuntu"
-          pass: "ubuntu123"
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          pass: ${{ secrets.SSH_PASSWORD }} # Pastikan ini ada di GitHub Secrets
           command: |
             echo "✅ Berhasil masuk ke server!"
             whoami
@@ -41,14 +41,14 @@ jobs:
 
   deploy:
     needs: [build, test-ssh]
-    runs-on: self-hosted  # Ubah ke self-hosted
+    runs-on: self-hosted
     steps:
-      - name: Deploy ke Server (Debug Mode)
+      - name: Deploy ke Server
         uses: fifsky/ssh-action@master
         with:
-          host: "192.168.1.100"
-          username: "ubuntu"
-          pass: "ubuntu123"
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          pass: ${{ secrets.SSH_PASSWORD }}
           command: |
             echo "✅ Login ke server berhasil"
 
@@ -60,13 +60,13 @@ jobs:
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
             echo "✅ Pull image terbaru"
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/myapp:latest
 
             echo "✅ Hentikan container lama"
-            sudo docker stop myapp || echo "⚠️ Container tidak ditemukan, lanjut ke langkah berikutnya."
+            docker stop myapp || echo "⚠️ Container tidak ditemukan, lanjut ke langkah berikutnya."
 
             echo "✅ Hapus container lama"
-            sudo docker rm myapp || echo "⚠️ Container tidak ditemukan, lanjut ke langkah berikutnya."
+            docker rm myapp || echo "⚠️ Container tidak ditemukan, lanjut ke langkah berikutnya."
 
             echo "✅ Jalankan container baru"
-            sudo docker run -d -p 8000:80 --name myapp ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+            docker run -d -p 8000:80 --name myapp ${{ secrets.DOCKER_USERNAME }}/myapp:latest
