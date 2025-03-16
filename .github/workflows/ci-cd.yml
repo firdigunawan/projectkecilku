@@ -21,8 +21,8 @@ jobs:
   test-ssh:
     runs-on: self-hosted
     steps:
-      - name: Test ping 
-        rung: ping 192.168.1.100
+      - name: Test ping ini coba bisa nggak 
+        run: ping 192.168.1.100
       - name: Ini Coba Cek SSH Ke Server
         uses: fifsky/ssh-action@master
         with:
