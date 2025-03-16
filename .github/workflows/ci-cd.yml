@@ -17,6 +17,21 @@ jobs:
 
       - name: Push Docker Image ke Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/myapp:latest
-        
-      - name: Ini Test Ping Coba Lagi  
-        run: ping -c 4 31.59.131.195
+
+  deploy:
+    runs-on: self-hosted
+    needs: build  # Job deploy hanya berjalan setelah build selesai
+    steps:
+      - name: Pull Docker Image dari Docker Hub
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+
+      - name: Hentikan Container Lama
+        run: docker stop myapp-container || true && docker rm myapp-container || true
+
+      - name: Jalankan Container Baru
+        run: |
+          docker run -d \
+            --name myapp-container \
+            -p 3000:3000 \  # Sesuaikan dengan port aplikasi
+            -e NODE_ENV=production \  # Sesuaikan environment variable jika perlu
+            ${{ secrets.DOCKER_USERNAME }}/myapp:latest
