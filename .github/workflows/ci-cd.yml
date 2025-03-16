@@ -27,14 +27,4 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           pass: ${{ secrets.SSH_PASSWORD }}
-          script: |
-            echo "✅ Berhasil masuk ke server!"
-            whoami
-            echo "✅ Cek home directory:"
-            ls -lah ~
-            echo "✅ Cek OS dan kernel:"
-            uname -a
-            echo "✅ Cek konektivitas internet:"
-            ping -c 4 google.com || echo "🚨 Tidak bisa akses internet!"
-            echo "✅ Cek status SSH service:"
-            systemctl status ssh || echo "🚨 SSH service bermasalah!"
+          command: ping -c 4 google.com
