@@ -17,15 +17,6 @@ jobs:
 
       - name: Push Docker Image ke Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/myapp:latest
-
-  test-ssh:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy Using SSH
-        uses: fifsky/ssh-action@master
-        with:
-          host: "192.168.1.100"
-          user: "ubuntu"
-          pass: "ubuntu123"
-          port: 22
-          command: whoami
+        
+      - name: Test ping 
+        run: ping -c 4 192.168.1.100
