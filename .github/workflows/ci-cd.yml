@@ -21,12 +21,13 @@ jobs:
   test-ssh:
     runs-on: ubuntu-latest
     steps:
-      - name: SSH REMOTE 
-        uses: fifsky/ssh-action@master
+      - name: Deploy Using SSH
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
-          user: ${{ secrets.SSH_USER }}
-          pass: ${{ secrets.SSH_PASSWORD }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          command: whoami && hostname
-          
+          script: |
+            whoami
+            
