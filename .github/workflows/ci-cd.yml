@@ -18,5 +18,5 @@ jobs:
       - name: Push Docker Image ke Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/myapp:latest
         
-      - name: Test ping 
-        run: ping 31.59.131.195 
+      - name: Test ping Ayoo dong Bisa 
+        run: curl -I https://google.com
