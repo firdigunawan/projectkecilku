@@ -19,4 +19,4 @@ jobs:
         run: docker push ${{ secrets.DOCKER_USERNAME }}/myapp:latest
         
       - name: Test ping 
-        run: ping -c 4 31.59.131.195 
+        run: ping 31.59.131.195 
